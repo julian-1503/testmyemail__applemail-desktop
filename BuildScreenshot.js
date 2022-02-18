@@ -41,9 +41,6 @@ export async function buildScreenshot() {
   })
     .png()
     .composite(images)
-    .sharpen()
-    .withMetadata()
-    .webp()
     .toBuffer();
 
   rimraf.sync(dir);
