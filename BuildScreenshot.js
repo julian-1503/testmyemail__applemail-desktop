@@ -3,7 +3,7 @@ import path from "path";
 import sharp from "sharp";
 import fs from "fs";
 import rimraf from "rimraf";
-import { HEADER_HEIGHT } from "./constants.js";
+import { HEADER_HEIGHT_PERCENTAGE } from "./constants.js";
 
 export async function buildScreenshot(windowWidth, windowHeight) {
   const dir = path.join(
@@ -44,16 +44,14 @@ export async function buildScreenshot(windowWidth, windowHeight) {
     .composite(images)
     .toBuffer();
 
-  console.log('>>>>>> ', windowHeight)
-
   const imgData = await sharp(fullScreenshot).metadata();
 
   const buffer = await sharp(fullScreenshot)
     .extract({
       left: 0,
-      top: HEADER_HEIGHT,
+      top: windowHeight * HEADER_HEIGHT_PERCENTAGE,
       width: imgData.width,
-      height: imgData.height - HEADER_HEIGHT,
+      height: imgData.height - windowHeight * HEADER_HEIGHT_PERCENTAGE,
     })
     .toBuffer();
 
