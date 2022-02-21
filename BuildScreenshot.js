@@ -46,7 +46,7 @@ export async function buildScreenshot(windowWidth, windowHeight) {
 
   const imgData = await sharp(fullScreenshot).metadata();
 
-  const headerToRemove = Math.round(windowHeight * HEADER_HEIGHT_PERCENTAGE);
+  const headerToRemove = 140;
 
   console.log(">>>>>>", headerToRemove);
 
