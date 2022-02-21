@@ -3,7 +3,7 @@ import path from "path";
 import sharp from "sharp";
 import fs from "fs";
 import rimraf from "rimraf";
-import { HEADER_HEIGHT_PERCENTAGE } from "./constants.js";
+import { HEADER_HEIGHT } from "./constants.js";
 
 export async function buildScreenshot(windowWidth, windowHeight) {
   const dir = path.join(
@@ -46,9 +46,9 @@ export async function buildScreenshot(windowWidth, windowHeight) {
 
   const imgData = await sharp(fullScreenshot).metadata();
 
-  const headerToRemove = 140;
+  const headerToRemove = HEADER_HEIGHT[windowHeight];
 
-  console.log(">>>>>>", headerToRemove);
+  console.log(">>>>>>", windowHeight);
 
   const buffer = await sharp(fullScreenshot)
     .extract({
