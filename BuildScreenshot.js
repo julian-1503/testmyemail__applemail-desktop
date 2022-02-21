@@ -3,6 +3,7 @@ import path from "path";
 import sharp from "sharp";
 import fs from "fs";
 import rimraf from "rimraf";
+import { HEADER_HEIGHT } from "./constants.js";
 
 export async function buildScreenshot() {
   const dir = path.join(
@@ -31,7 +32,7 @@ export async function buildScreenshot() {
     totalHeight += height;
   }
 
-  const buffer = await sharp({
+  const fullScreenshot = await sharp({
     create: {
       width: totalWidth,
       height: totalHeight,
@@ -41,6 +42,17 @@ export async function buildScreenshot() {
   })
     .png()
     .composite(images)
+    .toBuffer();
+
+  const imgData = await sharp(fullScreenshot).metadata();
+
+  const buffer = await sharp(fullScreenshot)
+    .extract({
+      left: 0,
+      top: HEADER_HEIGHT,
+      width: imgData.width,
+      height: imgData.height - HEADER_HEIGHT,
+    })
     .toBuffer();
 
   rimraf.sync(dir);
