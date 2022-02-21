@@ -83,21 +83,14 @@ export async function processTest(filePath) {
     delay 2
   `);
 
+
   await toggleFullScreenMode();
 
-  const [
-    scrollX,
-    scrollY,
-    scrollWidth,
-    scrollHeight,
-  ] = await getScrollDimensions();
+  const [scrollX, scrollY, scrollWidth, scrollHeight] =
+    await getScrollDimensions();
 
-  const [
-    windowX,
-    windowY,
-    windowWidth,
-    windowHeight,
-  ] = await getWindowDimensions();
+  const [windowX, windowY, windowWidth, windowHeight] =
+    await getWindowDimensions();
 
   const scrollTimes = getNumberOfScrolls(scrollHeight, windowHeight);
 
