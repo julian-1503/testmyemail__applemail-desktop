@@ -83,7 +83,6 @@ export async function processTest(filePath) {
     delay 2
   `);
 
-
   await toggleFullScreenMode();
 
   const [scrollX, scrollY, scrollWidth, scrollHeight] =
@@ -147,7 +146,7 @@ export async function processTest(filePath) {
 
   await closeWindow();
 
-  const screenshot = await buildScreenshot();
+  const screenshot = await buildScreenshot(windowWidth, windowHeight);
 
   return screenshot;
 }

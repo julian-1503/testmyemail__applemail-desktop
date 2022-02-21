@@ -5,7 +5,7 @@ import fs from "fs";
 import rimraf from "rimraf";
 import { HEADER_HEIGHT } from "./constants.js";
 
-export async function buildScreenshot() {
+export async function buildScreenshot(windowWidth, windowHeight) {
   const dir = path.join(
     os.homedir(),
     "Documents",
@@ -43,6 +43,8 @@ export async function buildScreenshot() {
     .png()
     .composite(images)
     .toBuffer();
+
+  console.log('>>>>>> ', windowHeight)
 
   const imgData = await sharp(fullScreenshot).metadata();
 
