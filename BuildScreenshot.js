@@ -46,12 +46,14 @@ export async function buildScreenshot(windowWidth, windowHeight) {
 
   const imgData = await sharp(fullScreenshot).metadata();
 
+  const headerToRemove = Math.round(windowHeight * HEADER_HEIGHT_PERCENTAGE);
+
   const buffer = await sharp(fullScreenshot)
     .extract({
       left: 0,
-      top: windowHeight * HEADER_HEIGHT_PERCENTAGE,
+      top: headerToRemove,
       width: imgData.width,
-      height: imgData.height - windowHeight * HEADER_HEIGHT_PERCENTAGE,
+      height: imgData.height - headerToRemove,
     })
     .toBuffer();
 
