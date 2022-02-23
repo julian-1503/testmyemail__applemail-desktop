@@ -3,8 +3,8 @@ import EventEmitter from "events";
 import { pathOr } from "ramda";
 import { getProvisionSettings } from "./Provisioning.js";
 import { createClient, commandOptions } from "redis";
-import logger from "./Logger.js";
-import ScreenshotModule from "./Screenshot.js";
+import Logger from "./Logger.js";
+import ScreenshotModule, { quitMailApp } from "./Screenshot.js";
 
 import {
   createEMLFile,
@@ -55,8 +55,8 @@ export default class App extends EventEmitter {
 
     this.provisioningData = data;
 
-    logger.label("Provisioning Data:");
-    logger.dump(data);
+    Logger.label("Provisioning Data:");
+    Logger.dump(data);
 
     this.transitionState(states.provisioned);
   }
@@ -88,7 +88,7 @@ export default class App extends EventEmitter {
   }
 
   async putTestBack(test) {
-    await this.redisClient.lpush(
+    await this.redisClient.lPush(
       this.provisioningData.ss_config.image_folder,
       JSON.stringify(test)
     );
@@ -100,8 +100,8 @@ export default class App extends EventEmitter {
     const nextTest = await this.getNextTest();
     const parsedTest = JSON.parse(nextTest.element);
 
-    logger.label("Next Test:");
-    logger.dump(parsedTest);
+    Logger.label("Next Test:");
+    Logger.dump(parsedTest);
 
     const { guid, test_guid: ssGuid, zone, content } = parsedTest;
     const { image_folder } = this.provisioningData.ss_config;
@@ -195,6 +195,8 @@ export default class App extends EventEmitter {
       if (parsedTest) {
         this.putTestBack(parsedTest);
       }
+
+      await quitMailApp();
     } finally {
       this.transitionState(states.idling);
     }

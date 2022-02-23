@@ -5,6 +5,17 @@ import { buildScreenshot } from "./BuildScreenshot.js";
 import * as errors from "./errors.js";
 
 /**
+ * Quits the Mail app to prevent excessive memory consumption.
+ */
+export const quitMailApp = async () => {
+  return await runAppleScript(`
+    tell application "Mail"
+      quit
+    end tell
+  `);
+};
+
+/**
  * Return the scroll dimensions of the active Mail Window's scrolling object.
  *
  * @return {Array} a list of integers representing the dimensions of the window
