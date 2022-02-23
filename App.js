@@ -4,7 +4,7 @@ import { pathOr } from "ramda";
 import { getProvisionSettings } from "./Provisioning.js";
 import { createClient, commandOptions } from "redis";
 import logger from "./Logger.js";
-import { processTest } from "./ProcessTest.js";
+import ScreenshotModule from "./Screenshot.js";
 
 import {
   createEMLFile,
@@ -87,6 +87,13 @@ export default class App extends EventEmitter {
     return next;
   }
 
+  async putTestBack(test) {
+    await this.redisClient.lpush(
+      this.provisioningData.ss_config.image_folder,
+      JSON.stringify(test)
+    );
+  }
+
   async processNextTest() {
     this.transitionState(states.processing);
 
@@ -104,78 +111,92 @@ export default class App extends EventEmitter {
 
     const filePath = path.join(getRootFolder(), "eml", name);
 
-    const screenshot = await processTest(filePath);
+    try {
+      const screenshot = await ScreenshotModule.main(filePath);
 
-    const encoding = "base64";
+      const encoding = "base64";
 
-    const width = +this.provisioningData.ss_config.thumb_width;
-    const height = +this.provisioningData.ss_config.thumb_height;
+      const width = +this.provisioningData.ss_config.thumb_width;
+      const height = +this.provisioningData.ss_config.thumb_height;
 
-    const smallThumbnail = await createThumbnail(
-      Buffer.from(screenshot, encoding),
-      width,
-      height,
-      resizeSmall
-    );
+      const smallThumbnail = await createThumbnail(
+        Buffer.from(screenshot, encoding),
+        width,
+        height,
+        resizeSmall
+      );
 
-    const bigThumbnail = await createThumbnail(
-      Buffer.from(screenshot, encoding),
-      width,
-      height,
-      resizeBig
-    );
+      const bigThumbnail = await createThumbnail(
+        Buffer.from(screenshot, encoding),
+        width,
+        height,
+        resizeBig
+      );
 
-    const fullThumbnail = await createThumbnail(
-      Buffer.from(screenshot, encoding),
-      width,
-      height,
-      resizeFull
-    );
+      const fullThumbnail = await createThumbnail(
+        Buffer.from(screenshot, encoding),
+        width,
+        height,
+        resizeFull
+      );
 
-    const bucket = this.provisioningData.ss_config.aws_eoa_bucket;
-    const imageFormat = "png";
+      const bucket = this.provisioningData.ss_config.aws_eoa_bucket;
+      const imageFormat = "png";
 
-    const uploader = getUploader({
-      accessKeyId: this.provisioningData.ss_config.aws_access_key,
-      secretAccessKey: this.provisioningData.ss_config.aws_secret_key,
-    });
+      const uploader = getUploader({
+        accessKeyId: this.provisioningData.ss_config.aws_access_key,
+        secretAccessKey: this.provisioningData.ss_config.aws_secret_key,
+      });
 
-    upload(uploader, {
-      bucket,
-      filename: getFileName(guid, ssGuid, image_folder, imageFormat, "_tn"),
-      body: smallThumbnail,
-      imageFormat,
-    });
+      upload(uploader, {
+        bucket,
+        filename: getFileName(guid, ssGuid, image_folder, imageFormat, "_tn"),
+        body: smallThumbnail,
+        imageFormat,
+      });
 
-    upload(uploader, {
-      bucket,
-      filename: getFileName(guid, ssGuid, image_folder, imageFormat, "_thumb"),
-      body: bigThumbnail,
-      imageFormat,
-    });
+      upload(uploader, {
+        bucket,
+        filename: getFileName(
+          guid,
+          ssGuid,
+          image_folder,
+          imageFormat,
+          "_thumb"
+        ),
+        body: bigThumbnail,
+        imageFormat,
+      });
 
-    upload(uploader, {
-      bucket,
-      filename: getFileName(guid, ssGuid, image_folder, imageFormat, ""),
-      body: fullThumbnail,
-      imageFormat,
-    });
+      upload(uploader, {
+        bucket,
+        filename: getFileName(guid, ssGuid, image_folder, imageFormat, ""),
+        body: fullThumbnail,
+        imageFormat,
+      });
 
-    notifyEmailProcessed({
-      reserveURL: this.provisioningData.ss_config.reserve_url,
-      logURL: this.provisioningData.ss_config.screenshot_log_url,
-      zone,
-      memberId: getMemberIdFromGuid(guid),
-      blockedImages: testHasBlockedImages(guid),
-      recordId: pathOr(0, ["guid_in_subject", image_folder], parsedTest),
-      testTime: getTestTimeFromGuid(guid),
-      testDate: getDateFromGuid(guid),
-      guid,
-      test_guid: ssGuid,
-      image_folder,
-      clientId: process.env.SERVER_ID,
-    });
+      notifyEmailProcessed({
+        reserveURL: this.provisioningData.ss_config.reserve_url,
+        logURL: this.provisioningData.ss_config.screenshot_log_url,
+        zone,
+        memberId: getMemberIdFromGuid(guid),
+        blockedImages: testHasBlockedImages(guid),
+        recordId: pathOr(0, ["guid_in_subject", image_folder], parsedTest),
+        testTime: getTestTimeFromGuid(guid),
+        testDate: getDateFromGuid(guid),
+        guid,
+        test_guid: ssGuid,
+        image_folder,
+        clientId: process.env.SERVER_ID,
+      });
+    } catch (error) {
+      Logger.error(error);
 
-    this.transitionState(states.idling);
+      if (parsedTest) {
+        this.putTestBack(parsedTest);
+      }
+    } finally {
+      this.transitionState(states.idling);
+    }
   }
 }
