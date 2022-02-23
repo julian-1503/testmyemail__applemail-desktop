@@ -134,7 +134,7 @@ const scroll = async ({ to: newPosition }) => {
       end tell
     end tell
 
-    delay 1
+    delay 0.2
   `);
 };
 
@@ -209,33 +209,15 @@ const getAppNameForActiveWindow = async () => {
 };
 
 /**
- * Get the front most application window count.
- */
-const getWindowCountForMailApp = async () => {
-  return runAppleScript(`
-    tell application "System Events"
-      tell process "Mail"
-        return count of windows
-      end tell
-    end tell
-  `);
-};
-
-/**
  * Check whether the Mail application is currently the front most active app.
  *
  * @return {Boolean} whether it is active.
  */
 const checkIsMailAppActive = async () => {
   const activeAppName = await getAppNameForActiveWindow();
-  const mailAppWindowCount = await getWindowCountForMailApp();
 
   if (activeAppName !== "Mail") {
     throw new Error(errors.WINDOW_NOT_PRESENT);
-  }
-
-  if (+mailAppWindowCount !== 1) {
-    throw new Error(errors.WRONG_NUMBER_OF_WINDOWS);
   }
 };
 
