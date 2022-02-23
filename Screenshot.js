@@ -1,8 +1,41 @@
 import { runAppleScript } from "run-applescript";
+import sleep from "sleep";
 
 import { buildScreenshot } from "./BuildScreenshot.js";
 
 import * as errors from "./errors.js";
+
+/**
+ * Activate Mail application.
+ */
+export const activateMailApp = async () => {
+  return await runAppleScript(`
+    tell application "Mail"
+       if not running then
+          run
+          delay 0.25
+       end if
+       activate
+    end tell
+
+    tell application "System Events"
+       tell application process "Mail"
+          set frontmost to true
+       end tell
+    end tell
+  `);
+};
+
+/**
+ * Check whether the Mail application is running
+ */
+const getIsMailAppRunning = async () => {
+  const result = await runAppleScript(`
+    return application "Mail" is running
+  `);
+
+  return result === "true";
+};
 
 /**
  * Quits the Mail app to prevent excessive memory consumption.
@@ -12,6 +45,8 @@ export const quitMailApp = async () => {
     tell application "Mail"
       quit
     end tell
+
+    delay 1
   `);
 };
 
@@ -250,12 +285,21 @@ const convertPixelsToScrollPosition = ({
 };
 
 async function main(filePath) {
+  const isMailAppRunning = await getIsMailAppRunning();
+
+  if (!isMailAppRunning) {
+    await activateMailApp();
+    sleep.sleep(3);
+  }
+
   const [windowX, windowY, windowWidth, windowHeight] =
     await getWindowDimensions();
 
   await moveCursorToBottom(windowHeight);
 
   await openTest({ at: filePath });
+
+  await checkIsMailAppActive();
 
   await toggleFullScreenMode();
 
