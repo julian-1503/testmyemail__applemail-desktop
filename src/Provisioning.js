@@ -1,7 +1,7 @@
 import FormData from "form-data";
 import axios from "axios";
 
-export const getProvisionSettings = async (envSettings, clientId) => {
+export const getProvisionSettings = async () => {
   const formData = new FormData();
 
   formData.append("email_address", process.env.EMAIL_ADDRESS);

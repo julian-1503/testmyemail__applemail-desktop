@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 import App, { states } from "./App.js";
 import logger from "./Logger.js";
 
-import { runAppleScript } from "run-applescript";
 import { activateMailApp } from "./Screenshot.js";
 
 dotenv.config();

@@ -1,0 +1,6 @@
+test:
+  stage: test
+  script:
+    - export PATH=$PATH:/Users/pathwire/.nvm/versions/node/v16.14.0/bin
+    - npm install
+    - npm test
