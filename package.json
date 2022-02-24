@@ -4,7 +4,7 @@
   "description": "a demo screenshot app for apple mail",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
     "start": "pm2 start ecosystem.json"
   },
   "type": "module",
@@ -28,6 +28,8 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^27.5.1",
-    "prettier": "^2.5.1"
+    "mock-fs": "^5.1.2",
+    "prettier": "^2.5.1",
+    "ts-jest": "^27.1.3"
   }
 }
