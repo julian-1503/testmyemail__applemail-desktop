@@ -13,9 +13,14 @@ export async function buildScreenshot(windowWidth, windowHeight) {
     "temp-captures"
   );
 
-  const files = (await fs.promises.readdir(dir)).filter((file) =>
-    file.includes(".png")
-  );
+  const files = (await fs.promises.readdir(dir))
+    .filter((file) => file.includes(".png"))
+    .sort((a, b) => {
+      let sortableA = +a.match(/\d+/)[0];
+      let sortableB = +b.match(/\d+/)[0];
+
+      return sortableA - sortableB;
+    });
 
   let images = [];
   let totalHeight = 0;
