@@ -27,10 +27,9 @@ export const getRootFolder = () => {
 export const createEMLFile = (name, content) => {
   const dir = path.join(getRootFolder(), "eml");
 
-  if (!fs.existsSync(dir)) {
-    rimraf.sync(dir);
-    fs.mkdirSync(dir);
-  }
+  rimraf.sync(dir);
+
+  fs.mkdirSync(dir);
 
   const decoded = Buffer.from(content, "base64").toString("utf8");
 
