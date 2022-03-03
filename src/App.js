@@ -5,6 +5,7 @@ import { getProvisionSettings } from "./Provisioning.js";
 import { createClient, commandOptions } from "redis";
 import Logger from "./Logger.js";
 import ScreenshotModule, { quitMailApp } from "./Screenshot.js";
+import { checkIn } from "./utils.js";
 
 import {
   createEMLFile,
@@ -62,6 +63,11 @@ export default class App extends EventEmitter {
   }
 
   async connectToSource() {
+    checkIn(
+      process.env.SERVER_ID,
+      this.provisioningData.ss_config.browser_checkin_url
+    );
+
     const client = createClient({
       socket: {
         port: this.provisioningData.ss_config.redis_server.port,
