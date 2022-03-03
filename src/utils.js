@@ -6,6 +6,7 @@ import sharp from "sharp";
 import logger from "./Logger.js";
 import FormData from "form-data";
 import axios from "axios";
+import Logger from "./Logger.js";
 
 import { GUID_REGEX } from "./constants.js";
 
@@ -263,7 +264,16 @@ export const notifyEmailProcessed = async ({
  * @param {number} clientId - the client server number.
  * @param {string} endpoint - the checkin url.
  */
-export const checkIn = (clientId, endpoint) => {
+export const checkIn = async (clientId, endpoint) => {
   const fullEndpoint = `${endpoint}${clientId}`;
-  axios.get(fullEndpoint);
+
+  Logger.info(`Checking In with Home for server ID: ${clientId}`);
+
+  Logger.info(fullEndpoint);
+
+  try {
+    await axios.get(fullEndpoint);
+  } catch (error) {
+    Logger.error(error);
+  }
 };
