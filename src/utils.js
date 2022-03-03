@@ -255,3 +255,15 @@ export const notifyEmailProcessed = async ({
     logger.error(error);
   }
 };
+
+/**
+ * Checkin to inform the dots app
+ * about the server status.
+ *
+ * @param {number} clientId - the client server number.
+ * @param {string} endpoint - the checkin url.
+ */
+export const checkIn = (clientId, endpoint) => {
+  const fullEndpoint = `${endpoint}${clientId}`;
+  axios.get(fullEndpoint);
+};
