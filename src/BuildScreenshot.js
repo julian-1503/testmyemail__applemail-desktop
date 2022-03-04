@@ -44,7 +44,7 @@ export async function buildScreenshot() {
       background: { r: 0, g: 0, b: 0, alpha: 0 },
     },
   })
-    .png()
+    .png({ effort: 1, compressionLevel: 9, force: true })
     .composite(images)
     .toBuffer();
 

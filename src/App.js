@@ -1,8 +1,9 @@
 import path from "path";
 import EventEmitter from "events";
 import { pathOr } from "ramda";
-import { getProvisionSettings } from "./Provisioning.js";
 import { createClient, commandOptions } from "redis";
+import sleep from "sleep";
+import { getProvisionSettings } from "./Provisioning.js";
 import Logger from "./Logger.js";
 import ScreenshotModule, { quitMailApp } from "./Screenshot.js";
 import { startCheckInInterval } from "./utils.js";
@@ -71,19 +72,25 @@ export default class App extends EventEmitter {
   }
 
   async connectToSource() {
-    const client = createClient({
-      socket: {
-        port: this.provisioningData.ss_config.redis_server.port,
-        host: this.provisioningData.ss_config.redis_server.host,
-      },
-      database: this.provisioningData.ss_config.redis_server.database,
-    });
+    try {
+      const client = createClient({
+        socket: {
+          port: this.provisioningData.ss_config.redis_server.port,
+          host: this.provisioningData.ss_config.redis_server.host,
+        },
+        database: this.provisioningData.ss_config.redis_server.database,
+      });
 
-    await client.connect();
+      await client.connect();
 
-    this.redisClient = client;
+      this.redisClient = client;
 
-    this.transitionState(states.connectedToSource);
+      this.transitionState(states.connectedToSource);
+    } catch (error) {
+      Logger.error("Error connecting to Redis.");
+      Logger.error(error);
+      this.transitionState(states.notConnectedToSource);
+    }
   }
 
   async getNextTest() {
@@ -106,7 +113,18 @@ export default class App extends EventEmitter {
   async processNextTest() {
     this.transitionState(states.processing);
 
-    const nextTest = await this.getNextTest();
+    let nextTest;
+
+    try {
+      nextTest = await this.getNextTest();
+    } catch {
+      sleep.sleep(5);
+
+      this.transitionState(states.idling);
+
+      return;
+    }
+
     const parsedTest = JSON.parse(nextTest.element);
 
     Logger.label("Next Test:");
@@ -184,22 +202,31 @@ export default class App extends EventEmitter {
         filename: getFileName(guid, ssGuid, image_folder, imageFormat, ""),
         body: fullThumbnail,
         imageFormat,
-      });
+      })
+        .then(() => {
+          notifyEmailProcessed({
+            reserveURL: this.provisioningData.ss_config.reserve_url,
+            logURL: this.provisioningData.ss_config.screenshot_log_url,
+            zone,
+            memberId: getMemberIdFromGuid(guid),
+            blockedImages: testHasBlockedImages(guid),
+            recordId: pathOr(0, ["guid_in_subject", image_folder], parsedTest),
+            testTime: getTestTimeFromGuid(guid),
+            testDate: getDateFromGuid(guid),
+            guid,
+            test_guid: ssGuid,
+            image_folder,
+            clientId: process.env.SERVER_ID,
+          });
+        })
+        .catch((error) => {
+          if (parsedTest) {
+            this.putTestBack(parsedTest);
+          }
 
-      notifyEmailProcessed({
-        reserveURL: this.provisioningData.ss_config.reserve_url,
-        logURL: this.provisioningData.ss_config.screenshot_log_url,
-        zone,
-        memberId: getMemberIdFromGuid(guid),
-        blockedImages: testHasBlockedImages(guid),
-        recordId: pathOr(0, ["guid_in_subject", image_folder], parsedTest),
-        testTime: getTestTimeFromGuid(guid),
-        testDate: getDateFromGuid(guid),
-        guid,
-        test_guid: ssGuid,
-        image_folder,
-        clientId: process.env.SERVER_ID,
-      });
+          Logger.error(`Could not upload screenshot for GUID: ${ssGuid}`);
+          Logger.error(error);
+        });
     } catch (error) {
       Logger.error(error);
       Logger.error(error.stack);

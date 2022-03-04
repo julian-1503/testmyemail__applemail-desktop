@@ -7,6 +7,7 @@ import { interval, from, tap } from "rxjs";
 import { mergeMap } from "rxjs/operators";
 import axios from "axios";
 import FormData from "form-data";
+import childProcess from "child_process";
 
 import logger from "./Logger.js";
 import Logger from "./Logger.js";
@@ -305,4 +306,21 @@ export const startCheckInInterval = (clientId, endpoint, intervalValue) => {
       mergeMap(() => from(axios.get(fullEndpoint)))
     )
     .subscribe();
+};
+
+/**
+ * Set the resolution of the virtual machines
+ * no need to do it locally.
+ */
+export const updateResolutionIfAvailable = () => {
+  const path = path.join(os.homedir(), "Documents", "scripts", "resolution.sh");
+
+  if (!fs.existsSync(root)) return;
+
+  try {
+    childProcess.execFileSync(path);
+  } catch (error) {
+    Logger.error("Error updating the screen resolution.");
+    Logger.error(error);
+  }
 };
