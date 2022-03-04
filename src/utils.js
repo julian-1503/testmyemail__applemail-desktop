@@ -320,7 +320,7 @@ export const updateResolutionIfAvailable = () => {
     "resolution.sh"
   );
 
-  if (!fs.existsSync(root)) return;
+  if (!fs.existsSync(filePath)) return;
 
   try {
     childProcess.execFileSync(filePath);
