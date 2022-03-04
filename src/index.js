@@ -5,9 +5,13 @@ import logger from "./Logger.js";
 
 import { activateMailApp } from "./Screenshot.js";
 
+import { updateResolutionIfAvailable } from "./utils.js";
+
 dotenv.config();
 
 const app = new App();
+
+updateResolutionIfAvailable();
 
 app.on("state-transition", (oldState, newState) => {
   logger.info(`Transitioning from state: ${oldState} to: ${newState}`);
