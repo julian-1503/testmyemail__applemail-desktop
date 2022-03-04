@@ -3,8 +3,8 @@ import path from "path";
 import os from "os";
 import rimraf from "rimraf";
 import sharp from "sharp";
-const { interval, from, tap } = require("rxjs");
-const { mergeMap } = require("rxjs/operators");
+import { interval, from, tap } from "rxjs";
+import { mergeMap } from "rxjs/operators";
 import axios from "axios";
 import FormData from "form-data";
 
