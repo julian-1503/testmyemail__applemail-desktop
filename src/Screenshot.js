@@ -2,10 +2,14 @@ import { runAppleScript } from "run-applescript";
 import sleep from "sleep";
 
 import { buildScreenshot } from "./BuildScreenshot.js";
-
+import Logger from "./Logger.js";
 import * as errors from "./errors.js";
-
 import { TOP_MOST_SCROLL_POSITION } from "./constants.js";
+
+// Starting form Monterey version -
+// Apple decided to include a inner shadow to the top of the window
+// that activates as soon as you start scrolling
+const SHADOW_HEIGHT = 5;
 
 /**
  * Activate Mail application.
@@ -53,7 +57,7 @@ export const quitMailApp = async () => {
 /**
  * Return the scroll dimensions of the active Mail Window's scrolling object.
  *
- * @return {Array} a list of integers representing the dimensions of the window
+ * @return {Promise<array>} a list of integers representing the dimensions of the window
  * in the format (xPosition, YPosition, width, height).
  */
 const getScrollDimensions = async () => {
@@ -71,16 +75,37 @@ const getScrollDimensions = async () => {
 };
 
 /**
+ * Return the header height of the active Mail Window's header object.
+ *
+ * @return {Promise<number>} the heather height in pixels.
+ */
+const getHeaderHeight = async () => {
+  const result = await runAppleScript(`
+    tell application "System Events"
+      tell process "Mail"
+        set theSize to size of group 1 of group 1 of scroll area 1 of window 1
+        set height to item 2 of theSize
+        return height
+      end tell
+    end tell
+  `);
+
+  return +result;
+};
+
+/**
  * Return the dimensions of the entire screen.
  *
- * @return {Array} a list of integers representing the dimensions of the window
+ * @return {Promise<array>} a list of integers representing the dimensions of the window
  * in the format (xPosition, YPosition, width, height).
  */
 const getWindowDimensions = async () => {
   return (
     await runAppleScript(`
-    tell application "Finder"
-      return bounds of window of desktop
+    tell application "System Events"
+      tell process "Mail"
+        return size of scroll area 1 of window 1
+      end tell
     end tell
   `)
   )
@@ -91,11 +116,11 @@ const getWindowDimensions = async () => {
 /**
  * Move the cursor to the bottom to prevent mousover events
  *
- * @param {Number} windowHeight - the screen height.
+ * @return {Promise<Void>}
  */
-const moveCursorToBottom = async (windowHeight) => {
+const moveCursorToBottom = async () => {
   return await runAppleScript(`
-    do shell script "cliclick m:" & "0,${windowHeight}"
+    do shell script "cliclick m:" & "0,9999"
   `);
 };
 
@@ -182,7 +207,7 @@ const getAppNameForActiveWindow = async () => {
 /**
  * Check whether the Mail application is currently the front most active app.
  *
- * @return {Boolean} whether it is active.
+ * @return {Promise<boolean>} whether it is active.
  */
 const checkIsMailAppActive = async () => {
   const activeAppName = await getAppNameForActiveWindow();
@@ -210,7 +235,9 @@ const convertPixelsToScrollPosition = ({
   currentScrollPosition,
 }) => {
   const screenHeightPixelsToPercentage =
-    (windowHeight * 100) / (scrollHeight - windowHeight) / 100;
+    ((windowHeight - SHADOW_HEIGHT) * 100) /
+    (scrollHeight - windowHeight) /
+    100;
 
   return screenHeightPixelsToPercentage + currentScrollPosition;
 };
@@ -224,29 +251,41 @@ const convertPixelsToScrollPosition = ({
  *
  * @return {Object} containing the offsetX and height dimensiong.
  */
-const computeNextHeight = ({
+const computeNextScreenshotDimensions = ({
   scrollHeight,
   windowHeight,
+  headerHeight,
   currentScrollIteration,
 }) => {
-  if (windowHeight === scrollHeight) {
+  Logger.debug(`
+    Current Scroll Iteration: ${currentScrollIteration}
+  `);
+  const noScrollNeeded = windowHeight === scrollHeight;
+
+  if (noScrollNeeded) {
     return {
-      height: windowHeight,
-      offsetY: 0,
+      height: windowHeight - headerHeight,
+      offsetY: headerHeight,
     };
   }
 
-  if (windowHeight * currentScrollIteration > scrollHeight) {
+  const isFirstIteration = currentScrollIteration === 1;
+
+  const pixelsToRemove = isFirstIteration ? headerHeight : 0;
+
+  const isLastPage = windowHeight * currentScrollIteration > scrollHeight;
+
+  if (isLastPage) {
     const height = scrollHeight - windowHeight * (currentScrollIteration - 1);
+
     return {
-      height,
+      height: height,
       offsetY: windowHeight - height,
     };
   } else {
-    const compensationPixels = currentScrollIteration === 1 ? 0 : 1;
     return {
-      height: windowHeight - compensationPixels,
-      offsetY: compensationPixels,
+      height: windowHeight - pixelsToRemove,
+      offsetY: pixelsToRemove + SHADOW_HEIGHT,
     };
   }
 };
@@ -259,23 +298,32 @@ async function main(filePath) {
     sleep.sleep(3);
   }
 
-  const [windowX, windowY, windowWidth, windowHeight] =
-    await getWindowDimensions();
-
-  await moveCursorToBottom(windowHeight);
-
   await openTest({ at: filePath });
 
-  sleep.sleep(1);
+  sleep.msleep(500);
 
   await checkIsMailAppActive();
 
   await toggleFullScreenMode();
 
-  sleep.sleep(2);
+  sleep.sleep(1);
+
+  const [windowWidth, windowHeight] = await getWindowDimensions();
+
+  Logger.debug(`
+    Window Dimensions:
+    (${windowWidth}, ${windowHeight})
+  `);
 
   const [scrollX, scrollY, scrollWidth, scrollHeight] =
     await getScrollDimensions();
+
+  Logger.debug(`
+    Scroll Dimensions
+    (${scrollX}, ${scrollY}, ${scrollWidth}, ${scrollHeight})
+  `);
+
+  const headerHeight = await getHeaderHeight();
 
   let currentScrollIteration = 1;
 
@@ -284,15 +332,22 @@ async function main(filePath) {
   let currentScrollPosition = TOP_MOST_SCROLL_POSITION;
 
   while (capturedPixels < scrollHeight) {
-    const nextDimensions = computeNextHeight({
+    Logger.debug(`Captured Pixels: ${capturedPixels}`);
+    const nextDimensions = computeNextScreenshotDimensions({
       scrollHeight,
       windowHeight,
+      headerHeight,
       currentScrollIteration,
     });
 
+    Logger.debug(`
+      Next Screenshot Dimensions
+      (height: ${nextDimensions.height}, offsetX: ${nextDimensions.offsetY})
+    `);
+
     await checkIsMailAppActive();
 
-    await moveCursorToBottom(windowHeight);
+    await moveCursorToBottom();
 
     await captureScreenPortion({
       offsetX: 0,
@@ -304,7 +359,13 @@ async function main(filePath) {
 
     capturedPixels += windowHeight;
 
-    if (capturedPixels < scrollHeight) {
+    if (capturedPixels > scrollHeight) {
+      capturedPixels = scrollHeight;
+    }
+
+    const needToScroll = capturedPixels < scrollHeight;
+
+    if (needToScroll) {
       const nextScrollingPosition = convertPixelsToScrollPosition({
         windowHeight,
         scrollHeight,
@@ -321,13 +382,15 @@ async function main(filePath) {
     }
   }
 
+  Logger.debug(`Captured Pixels: ${capturedPixels}`);
+
   await toggleFullScreenMode();
 
-  sleep.sleep(1);
+  sleep.msleep(500);
 
   await closeWindow();
 
-  const screenshot = await buildScreenshot(windowWidth, windowHeight);
+  const screenshot = await buildScreenshot(headerHeight);
 
   return screenshot;
 }

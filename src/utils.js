@@ -109,7 +109,7 @@ export const resizeBig = async (screenshot, endWidth) => {
  * @param {Number} height - the small thumbnail height.
  * @param {Function} resize - the resize implementation.
  *
- * @return {Buffer} the resulting resized image.
+ * @return {Promise<Buffer>} the resulting resized image.
  */
 export const createThumbnail = (screenshot, width, height, resize) => {
   return resize(screenshot, width, height);
@@ -267,9 +267,9 @@ export const notifyEmailProcessed = async ({
 export const checkIn = async (clientId, endpoint) => {
   const fullEndpoint = `${endpoint}${clientId}`;
 
-  Logger.info(`Checking In with Home for server ID: ${clientId}`);
+  Logger.effect(`Checking In with Home for server ID: ${clientId}`);
 
-  Logger.info(fullEndpoint);
+  Logger.effect(fullEndpoint);
 
   try {
     await axios.get(fullEndpoint);
