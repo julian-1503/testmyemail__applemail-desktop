@@ -6,8 +6,8 @@ export const HEADER_HEIGHT = {
 
 // Pixels that need to be chopped from the partial image.
 export const COMPENSATION_PIXELS = {
-  768: 10,
-  900: 0,
+  768: 1,
+  900: 5,
 };
 
 // The screenshot suffix for the different image sizes.

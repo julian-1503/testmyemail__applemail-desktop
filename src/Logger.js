@@ -16,4 +16,12 @@ export default {
   error: (text) => {
     console.error(chalk.bold.red(text));
   },
+
+  debug: (text) => {
+    console.log(chalk.bold.gray(text));
+  },
+
+  effect: (text) => {
+    console.log(chalk.bold.magenta(text));
+  },
 };

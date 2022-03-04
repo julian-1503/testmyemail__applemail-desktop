@@ -107,7 +107,9 @@ export default class App extends EventEmitter {
     const parsedTest = JSON.parse(nextTest.element);
 
     Logger.label("Next Test:");
-    Logger.dump(parsedTest);
+
+    const { content: _, ...rest } = parsedTest;
+    Logger.dump(rest);
 
     const { guid, test_guid: ssGuid, zone, content } = parsedTest;
     const { image_folder } = this.provisioningData.ss_config;
@@ -197,6 +199,7 @@ export default class App extends EventEmitter {
       });
     } catch (error) {
       Logger.error(error);
+      Logger.error(error.stack);
 
       if (parsedTest) {
         this.putTestBack(parsedTest);
