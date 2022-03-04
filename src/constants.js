@@ -23,3 +23,6 @@ export const GUID_REGEX =
 
 // The starting scroll position is 0 for Mail window apps.
 export const TOP_MOST_SCROLL_POSITION = 0;
+
+//  Check In with home interval.
+export const CHECK_INTERVAL = 3000;

@@ -5,7 +5,7 @@ import { getProvisionSettings } from "./Provisioning.js";
 import { createClient, commandOptions } from "redis";
 import Logger from "./Logger.js";
 import ScreenshotModule, { quitMailApp } from "./Screenshot.js";
-import { checkIn } from "./utils.js";
+import { startCheckInInterval } from "./utils.js";
 
 import {
   createEMLFile,
@@ -21,6 +21,8 @@ import {
   getDateFromGuid,
   testHasBlockedImages,
 } from "./utils.js";
+
+import { CHECK_INTERVAL } from "./constants.js";
 
 import { getUploader, upload } from "./Upload.js";
 
@@ -59,15 +61,16 @@ export default class App extends EventEmitter {
     Logger.label("Provisioning Data:");
     Logger.dump(data);
 
+    startCheckInInterval(
+      process.env.SERVER_ID,
+      this.provisioningData.ss_config.browser_checkin_url,
+      CHECK_INTERVAL
+    );
+
     this.transitionState(states.provisioned);
   }
 
   async connectToSource() {
-    checkIn(
-      process.env.SERVER_ID,
-      this.provisioningData.ss_config.browser_checkin_url
-    );
-
     const client = createClient({
       socket: {
         port: this.provisioningData.ss_config.redis_server.port,
