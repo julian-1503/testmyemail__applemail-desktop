@@ -3,9 +3,12 @@ import path from "path";
 import os from "os";
 import rimraf from "rimraf";
 import sharp from "sharp";
-import logger from "./Logger.js";
-import FormData from "form-data";
+const { interval, from, tap } = require("rxjs");
+const { mergeMap } = require("rxjs/operators");
 import axios from "axios";
+import FormData from "form-data";
+
+import logger from "./Logger.js";
 import Logger from "./Logger.js";
 
 import { GUID_REGEX } from "./constants.js";
@@ -26,7 +29,13 @@ export const getRootFolder = () => {
  *
  */
 export const createEMLFile = (name, content) => {
-  const dir = path.join(getRootFolder(), "eml");
+  const root = getRootFolder();
+
+  if (!fs.existsSync(root)) {
+    fs.mkdirSync(root);
+  }
+
+  const dir = path.join(root, "eml");
 
   rimraf.sync(dir);
 
@@ -276,4 +285,24 @@ export const checkIn = async (clientId, endpoint) => {
   } catch (error) {
     Logger.error(error);
   }
+};
+
+/**
+ * Create the checkin interval to inform the dots app
+ * about the server status.
+ *
+ * @param {number} clientId - the client server number.
+ * @param {string} endpoint - the checkin url.
+ * @param {number} intervalValue - the value for each iteration in milliseconds.
+ */
+export const startCheckInInterval = (clientId, endpoint, intervalValue) => {
+  const fullEndpoint = `${endpoint}${clientId}`;
+  interval(intervalValue)
+    .pipe(
+      tap(() => {
+        Logger.effect(`Checking In with Home for server ID: ${clientId}`);
+      }),
+      mergeMap(() => from(axios.get(fullEndpoint)))
+    )
+    .subscribe();
 };
