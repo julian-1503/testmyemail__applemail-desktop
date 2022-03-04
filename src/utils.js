@@ -313,12 +313,17 @@ export const startCheckInInterval = (clientId, endpoint, intervalValue) => {
  * no need to do it locally.
  */
 export const updateResolutionIfAvailable = () => {
-  const path = path.join(os.homedir(), "Documents", "scripts", "resolution.sh");
+  const filePath = path.join(
+    os.homedir(),
+    "Documents",
+    "scripts",
+    "resolution.sh"
+  );
 
   if (!fs.existsSync(root)) return;
 
   try {
-    childProcess.execFileSync(path);
+    childProcess.execFileSync(filePath);
   } catch (error) {
     Logger.error("Error updating the screen resolution.");
     Logger.error(error);
