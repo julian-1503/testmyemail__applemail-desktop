@@ -1,6 +1,6 @@
 {
   "name": "mac-os-nodejs",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "a demo screenshot app for apple mail",
   "main": "index.js",
   "scripts": {
