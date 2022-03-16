@@ -2,11 +2,15 @@ import path from "path";
 import EventEmitter from "events";
 import { pathOr } from "ramda";
 import { createClient, commandOptions } from "redis";
-import sleep from "sleep";
+import { readFile } from "fs/promises";
 import { getProvisionSettings } from "./Provisioning.js";
 import Logger from "./Logger.js";
-import ScreenshotModule, { quitMailApp } from "./Screenshot.js";
-import { startCheckInInterval } from "./utils.js";
+import ScreenshotModule, {
+  quitMailApp,
+  openTest,
+  activateMailApp,
+} from "./Screenshot.js";
+import { startCheckInInterval, wait } from "./utils.js";
 
 import {
   createEMLFile,
@@ -85,6 +89,8 @@ export default class App extends EventEmitter {
 
       this.redisClient = client;
 
+      this.launchVersionScreen();
+
       this.transitionState(states.connectedToSource);
     } catch (error) {
       Logger.error("Error connecting to Redis.");
@@ -118,7 +124,7 @@ export default class App extends EventEmitter {
     try {
       nextTest = await this.getNextTest();
     } catch {
-      sleep.sleep(5);
+      wait({ seconds: 5 });
 
       this.transitionState(states.idling);
 
@@ -239,5 +245,42 @@ export default class App extends EventEmitter {
     } finally {
       this.transitionState(states.idling);
     }
+  }
+
+  async launchVersionScreen() {
+    const name = "version.eml";
+    const filePath = path.join(getRootFolder(), "eml", name);
+    const packageJSON = JSON.parse(
+      await readFile(new URL("../package.json", import.meta.url))
+    );
+
+    const content = Buffer.from(
+      "Content-Type: text/html; charset=utf-8\r\n" +
+        "Content-Transfer-Encoding: quoted-printable\r\n" +
+        "X-Eoa-Zone: none\r\n" +
+        "X-Eoa-ID: 0\r\n" +
+        "From: AppleMail <support@emailonacid.com>\r\n" +
+        "To: AppleMail <support@emailonacid.com>\r\n" +
+        "Subject: App Version\r\n" +
+        "Message-ID: <f3fdb2fc-bd33-5352-c053-d20959c79a51@appmail.emailonacid.com>\r\n" +
+        "Date: Tue, 15 Mar 2022 23:53:43 +0000\r\n" +
+        "MIME-Version: 1.0\r\n" +
+        "\r\n" +
+        '<h1 style=3D"font-size: 50px; text-align: center;margin-top: 100px">' +
+        "Version: " +
+        packageJSON.version +
+        "</h1>\n" +
+        '<p style=3D"font-size: 10px;font-style: italic;">' +
+        "Do not close this window</p>\n" +
+        "\n"
+    ).toString("base64");
+
+    Logger.debug(content);
+
+    await activateMailApp();
+
+    createEMLFile(name, content);
+
+    await openTest({ at: filePath });
   }
 }

@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import rimraf from "rimraf";
+import sleep from "sleep";
 import sharp from "sharp";
 import { interval, from, tap } from "rxjs";
 import { mergeMap } from "rxjs/operators";
@@ -327,5 +328,19 @@ export const updateResolutionIfAvailable = () => {
   } catch (error) {
     Logger.error("Error updating the screen resolution.");
     Logger.error(error);
+  }
+};
+
+/**
+ * Sleep for a number of seconds or milliseconds.
+ *
+ * @param {Number} seconds - the number of seconds to wait
+ * @param {Number} milliseconds - the number of milliseconds to wait
+ */
+export const wait = ({ seconds, milliseconds }) => {
+  if (seconds) {
+    sleep.sleep(seconds);
+  } else {
+    sleep.msleep(milliseconds);
   }
 };

@@ -25,4 +25,7 @@ export const GUID_REGEX =
 export const TOP_MOST_SCROLL_POSITION = 0;
 
 //  Check In with home interval.
-export const CHECK_INTERVAL = 3000;
+export const CHECK_INTERVAL = 6000;
+
+// Fixed window width. Inherited from legacy application.
+export const WINDOW_WIDTH = 1048;
