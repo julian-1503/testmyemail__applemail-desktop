@@ -3,6 +3,7 @@
     {
       "name": "Apple Mail Screenshot App",
       "script": "./src/index.js",
+      "cwd": "${HOME}/Documents/app/",
       "max_memory_restart": "1000M",
       "restart_delay": 5000,
       "max_restarts": 20,
