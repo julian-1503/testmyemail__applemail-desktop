@@ -282,6 +282,19 @@ const scrollHeader = ({ headerHeight, scrollHeight, windowHeight }) => {
 };
 
 /**
+ * count the total of visible windows on the mail app.
+ *
+ * @return {Promise<number>} a promise resolving with the number of windows.
+ */
+const getWindowCount = async () => {
+  return +(await runAppleScript(`
+    tell application "Mail"
+      return count of (every window where visible is true)
+    end tell
+  `));
+};
+
+/**
  * Check whether the Mail application is currently the front most active app.
  *
  * @return {Promise<boolean>} whether it is active.
@@ -403,7 +416,11 @@ async function main(filePath) {
 
   Logger.debug(">>>>>> Starting <<<<<<");
 
-  await closeWindow();
+  const windowCount = await getWindowCount();
+
+  if (windowCount > 1) {
+    await closeWindow();
+  }
 
   const isMailAppRunning = await getIsMailAppRunning();
 
