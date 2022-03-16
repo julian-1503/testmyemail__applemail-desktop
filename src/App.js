@@ -68,7 +68,7 @@ export default class App extends EventEmitter {
 
     startCheckInInterval(
       process.env.SERVER_ID,
-      this.provisioningData.ss_config.browser_checkin_url,
+      this.provisioningData.ss_config.checkin_url,
       CHECK_INTERVAL
     );
 
