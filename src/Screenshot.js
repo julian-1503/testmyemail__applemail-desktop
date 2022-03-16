@@ -573,7 +573,7 @@ async function main(filePath) {
 
         scrollIteration += 1;
 
-        wait({ milliseconds: 200 });
+        wait({ milliseconds: 300 });
       } else {
         break;
       }

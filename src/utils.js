@@ -269,27 +269,6 @@ export const notifyEmailProcessed = async ({
 };
 
 /**
- * Checkin to inform the dots app
- * about the server status.
- *
- * @param {number} clientId - the client server number.
- * @param {string} endpoint - the checkin url.
- */
-export const checkIn = async (clientId, endpoint) => {
-  const fullEndpoint = `${endpoint}${clientId}`;
-
-  Logger.effect(`Checking In with Home for server ID: ${clientId}`);
-
-  Logger.effect(fullEndpoint);
-
-  try {
-    await axios.get(fullEndpoint);
-  } catch (error) {
-    Logger.error(error);
-  }
-};
-
-/**
  * Create the checkin interval to inform the dots app
  * about the server status.
  *
@@ -303,6 +282,7 @@ export const startCheckInInterval = (clientId, endpoint, intervalValue) => {
     .pipe(
       tap(() => {
         Logger.effect(`Checking In with Home for server ID: ${clientId}`);
+        Logger.effect(fullEndpoint);
       }),
       mergeMap(() => from(axios.get(fullEndpoint)))
     )
