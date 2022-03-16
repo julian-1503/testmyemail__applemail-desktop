@@ -18,7 +18,9 @@ export default {
   },
 
   debug: (text) => {
-    console.log(chalk.bold.gray(text));
+    if (process.env.DEBUG) {
+      console.log(chalk.bold.gray(text));
+    }
   },
 
   effect: (text) => {

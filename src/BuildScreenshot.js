@@ -26,14 +26,14 @@ export async function buildScreenshot() {
   let totalWidth = 0;
 
   for (const file of files) {
-    const image = await fs.promises.readFile(path.join(dir, file));
+    let image = await fs.promises.readFile(path.join(dir, file));
 
-    const { width, height } = await sharp(image).metadata();
+    let metadata = await sharp(image).metadata();
 
     images.push({ input: image, left: 0, top: totalHeight, blend: "add" });
 
-    totalWidth = width;
-    totalHeight += height;
+    totalWidth = metadata.width;
+    totalHeight += metadata.height;
   }
 
   const buffer = await sharp({
