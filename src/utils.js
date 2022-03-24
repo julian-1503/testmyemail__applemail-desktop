@@ -39,13 +39,27 @@ export const createEMLFile = (name, content) => {
 
   const dir = path.join(root, "eml");
 
-  rimraf.sync(dir);
-
-  fs.mkdirSync(dir);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir);
+  }
 
   const decoded = Buffer.from(content, "base64").toString("utf8");
 
   fs.writeFileSync(path.join(dir, name), decoded);
+};
+
+/**
+ * Delete an .eml file from the test contents.
+ * @param {String} name - the expected file name.
+ *
+ */
+export const deleteEMLFile = (name) => {
+  const root = getRootFolder();
+  const dir = path.join(root, "eml", name);
+
+  if (fs.existsSync(dir)) {
+    fs.unlinkSync(dir);
+  }
 };
 
 /**

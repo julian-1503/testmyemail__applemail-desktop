@@ -3,3 +3,5 @@ export const WINDOW_NOT_PRESENT =
 
 export const WRONG_NUMBER_OF_WINDOWS =
   "The number of windows for the Mail app is wrong. There should only be two windows open.";
+
+export const NO_EML_FILE_AVAILABLE = "Expected EML file not found";
