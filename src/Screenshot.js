@@ -1,4 +1,5 @@
 import { runAppleScript } from "run-applescript";
+import fs from "fs";
 
 import { buildScreenshot } from "./BuildScreenshot.js";
 import Logger from "./Logger.js";
@@ -12,7 +13,7 @@ const CHUNK_TO_SCROLL = 550;
 // Fixed heigt dimensions to capture to prevent running into ui elements.
 const SCREENSHOT_HEIGHT = 600;
 
-const centerWindow = () => {
+export const centerWindow = () => {
   return runAppleScript(`
     tell application \"Finder\"
       set screenSize to bounds of window of desktop
@@ -177,7 +178,7 @@ const scroll = async ({ to: newPosition }) => {
 /**
  * Closes the front most window for the Mail process.
  */
-const closeWindow = async () => {
+export const closeWindow = async () => {
   return await runAppleScript(`
     tell application "System Events"
       tell process "Mail"
@@ -193,6 +194,11 @@ const closeWindow = async () => {
  * @param {String} at - the path to the filesystem where the EMl file is located.
  */
 export const openTest = async ({ at }) => {
+  if (!fs.existsSync(at)) {
+    Logger.debug(`No EML file found at ${at}`);
+    throw new error(errors.NO_EML_FILE_AVAILABLE);
+  }
+
   Logger.debug("Opening Test");
   return await runAppleScript(`
     tell application "Mail"
@@ -238,7 +244,7 @@ const getAppNameForActiveWindow = async () => {
  *
  * @return {Promise<Void>}
  */
-const resizeWindow = async () => {
+export const resizeWindow = async () => {
   Logger.debug("Resizing Window");
   return runAppleScript(`
     tell application "Finder"
@@ -286,7 +292,7 @@ const scrollHeader = ({ headerHeight, scrollHeight, windowHeight }) => {
  *
  * @return {Promise<number>} a promise resolving with the number of windows.
  */
-const getWindowCount = async () => {
+export const getWindowCount = async () => {
   return +(await runAppleScript(`
     tell application "Mail"
       return count of (every window where visible is true)
@@ -431,19 +437,11 @@ async function main(filePath) {
     wait({ seconds: 3 });
   }
 
-  moveCursorToBottom();
-
   await openTest({ at: filePath });
 
-  wait({ milliseconds: 500 });
+  wait({ seconds: 2 });
 
   await checkIsMailAppActive();
-
-  await resizeWindow();
-
-  centerWindow();
-
-  wait({ milliseconds: 1500 });
 
   const [windowX, windowY, windowWidth, windowHeight] =
     await getWindowDimensions();
@@ -474,6 +472,8 @@ async function main(filePath) {
   `);
 
   if (noScrollNeeded) {
+    await moveCursorToBottom();
+
     await captureScreenPortion({
       offsetX: windowX,
       offsetY: windowY + headerHeight,

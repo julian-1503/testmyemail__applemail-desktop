@@ -6,13 +6,17 @@ import { readFile } from "fs/promises";
 import { getProvisionSettings } from "./Provisioning.js";
 import Logger from "./Logger.js";
 import ScreenshotModule, {
-  quitMailApp,
   openTest,
   activateMailApp,
+  closeWindow,
+  getWindowCount,
+  resizeWindow,
+  centerWindow,
 } from "./Screenshot.js";
 import { startCheckInInterval, wait } from "./utils.js";
 
 import {
+  deleteEMLFile,
   createEMLFile,
   getRootFolder,
   createThumbnail,
@@ -110,10 +114,13 @@ export default class App extends EventEmitter {
   }
 
   async putTestBack(test) {
-    await this.redisClient.lPush(
+    const result = await this.redisClient.lPush(
       this.provisioningData.ss_config.image_folder,
       JSON.stringify(test)
     );
+
+    Logger.debug("Test back on the queue.");
+    Logger.debug(`Result: ${result}`);
   }
 
   async processNextTest() {
@@ -148,6 +155,8 @@ export default class App extends EventEmitter {
 
     try {
       const screenshot = await ScreenshotModule.main(filePath);
+
+      deleteEMLFile(name);
 
       const encoding = "base64";
 
@@ -238,10 +247,13 @@ export default class App extends EventEmitter {
       Logger.error(error.stack);
 
       if (parsedTest) {
-        this.putTestBack(parsedTest);
+        await this.putTestBack(parsedTest);
       }
 
-      await quitMailApp();
+      deleteEMLFile(name);
+
+      wait({ seconds: 1 });
+      process.exit(1);
     } finally {
       this.transitionState(states.idling);
     }
@@ -275,12 +287,25 @@ export default class App extends EventEmitter {
         "\n"
     ).toString("base64");
 
-    Logger.debug(content);
-
     await activateMailApp();
 
     createEMLFile(name, content);
 
+    let windowCount = await getWindowCount();
+
+    while (windowCount >= 1) {
+      await closeWindow();
+      windowCount--;
+    }
+
     await openTest({ at: filePath });
+
+    wait({ seconds: 1 });
+
+    await resizeWindow();
+
+    await centerWindow();
+
+    deleteEMLFile(name);
   }
 }

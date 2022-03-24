@@ -18,7 +18,7 @@ export default {
   },
 
   debug: (text) => {
-    if (process.env.DEBUG) {
+    if (process.env.DEBUG === "true") {
       console.log(chalk.bold.gray(text));
     }
   },
