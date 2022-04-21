@@ -12,7 +12,6 @@ import ThumbnailModule from './resize-screenshot';
 import UploadModule from './upload';
 import NotifyModule from './notify';
 
-import { TYPES } from '@applemail/config/src/inversify.types';
 import Guid, { GuidExpressable } from '@applemail/lib/src/guid';
 
 export const getMetadata = async (

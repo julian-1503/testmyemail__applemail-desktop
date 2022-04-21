@@ -43,7 +43,7 @@
     "shelljs": "^0.8.5",
     "sleep": "^6.3.0",
     "winston": "^3.7.2",
-    "winston-cloudwatch": "^4.0.1"
+    "winston-aws-cloudwatch": "^3.0.0"
   },
   "devDependencies": {
     "@jest/types": "^27.5.1",
