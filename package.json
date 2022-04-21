@@ -1,6 +1,6 @@
 {
   "name": "mac-os-nodejs",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "description": "Screenshot app for apple mail",
   "private": true,
   "scripts": {
