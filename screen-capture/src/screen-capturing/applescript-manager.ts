@@ -1,5 +1,6 @@
 import { injectable, inject } from 'inversify';
 import { runAppleScript } from '@applemail/lib/src/utils';
+import Logger from '@applemail/lib/src/logger';
 
 import {
   AppleScriptManaging,
@@ -26,6 +27,9 @@ class AppleScriptManager implements AppleScriptManaging {
   }
 
   async centerWindow(): Promise<void> {
+    Logger.log('debug', `[APPLE-MANAGER] centering window.`, {
+      tags: 'applescript,center',
+    });
     await runAppleScript(`
       tell application "finder"
         set screensize to bounds of window of desktop
@@ -53,6 +57,9 @@ class AppleScriptManager implements AppleScriptManaging {
   }
 
   async startMailApp(): Promise<void> {
+    Logger.log('debug', `[APPLE-MANAGER] starting app.`, {
+      tags: 'applescript,start',
+    });
     await runAppleScript(`
       tell application "${this.appName}"
          if not running then
@@ -161,6 +168,10 @@ class AppleScriptManager implements AppleScriptManaging {
   }
 
   async scroll({ to: newPosition }: { to: number }): Promise<void> {
+    Logger.log('debug', `[APPLE-MANAGER] scrolling to: ${newPosition}.`, {
+      tags: 'applescript,scroll',
+    });
+
     await runAppleScript(`
       tell application "System Events"
         tell process "${this.appName}"
@@ -183,6 +194,9 @@ class AppleScriptManager implements AppleScriptManaging {
   }
 
   async closeWindow(): Promise<void> {
+    Logger.log('debug', `[APPLE-MANAGER] closing window.`, {
+      tags: 'applescript,close',
+    });
     await runAppleScript(`
       tell application "System Events"
         tell process "${this.appName}"
@@ -193,6 +207,10 @@ class AppleScriptManager implements AppleScriptManaging {
   }
 
   async openTest({ at }: { at: string }): Promise<void> {
+    Logger.log('debug', `[APPLE-MANAGER] opening test at: ${at}.`, {
+      tags: 'applescript,open',
+    });
+
     await runAppleScript(`
       tell application "${this.appName}"
         set download html attachments to true
@@ -219,6 +237,16 @@ class AppleScriptManager implements AppleScriptManaging {
   ): Promise<void> {
     await this.moveCursorToBottom();
 
+    Logger.log(
+      'debug',
+      `[APPLE-MANAGER] capturing screenshot with dimensions: 
+               (offsetX: ${offsetX}, offsetY: ${offsetY}, windth: ${width}, height: ${height}).
+      `,
+      {
+        tags: 'applescript,resize',
+      }
+    );
+
     await runAppleScript(`
       set dFolder to "${toPath}"
 
@@ -229,6 +257,10 @@ class AppleScriptManager implements AppleScriptManaging {
   }
 
   getAppNameForActiveWindow(): Promise<string> {
+    Logger.log('debug', `[APPLE-MANAGER] getting app name.`, {
+      tags: 'applescript,name',
+    });
+
     return runAppleScript(`
       tell application "System Events"
         return (name of application processes whose frontmost is true) as string
@@ -237,6 +269,10 @@ class AppleScriptManager implements AppleScriptManaging {
   }
 
   async resizeWindow(): Promise<void> {
+    Logger.log('debug', `[APPLE-MANAGER] resizing window.`, {
+      tags: 'applescript,resize',
+    });
+
     await runAppleScript(`
       tell application "Finder"
         set screenSize to bounds of window of desktop

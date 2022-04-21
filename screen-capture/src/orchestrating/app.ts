@@ -112,7 +112,15 @@ export default class App extends EventEmitter implements Orchestrating {
       });
 
       this.transition(AppState.Processing);
-    } catch {
+    } catch (e) {
+      if (e instanceof Error) {
+        Logger.log('error', `[APP] Could not get next test`, {
+          tags: 'app,recovery',
+          error: e.message,
+          trace: e.stack,
+        });
+      }
+
       this.transition(AppState.Idling);
     }
   }

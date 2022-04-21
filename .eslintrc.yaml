@@ -8,5 +8,6 @@ parser: '@typescript-eslint/parser'
 parserOptions:
   ecmaVersion: 2021
   project: ./tsconfig-base.json
+  createDefaultProgram: true
 plugins:
   - '@typescript-eslint'

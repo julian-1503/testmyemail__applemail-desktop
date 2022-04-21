@@ -146,6 +146,10 @@ class ScreenshotService extends EventEmitter implements ScreenCapturable {
   }
 
   private async handleTestOpen() {
+    Logger.log('debug', `[CAPTURE] Test is now open.`, {
+      tags: 'capture,open',
+    });
+
     this.monitorTestWindow();
 
     await this.appleScriptManager.prepareWindow();
@@ -160,6 +164,12 @@ class ScreenshotService extends EventEmitter implements ScreenCapturable {
       return;
     }
 
+    Logger.log(
+      'debug',
+      `[CAPTURE] Capturing next chunk - chunk number: ${this.scrollIteration}.`,
+      { tags: 'capture,next chunk' }
+    );
+
     const nextDimensions = this.computeNextScreenshotDimensions({
       windowX: this.windowDimensions.offsetX,
       windowY: this.windowDimensions.offsetY,
@@ -170,6 +180,10 @@ class ScreenshotService extends EventEmitter implements ScreenCapturable {
       scrollIteration: this.scrollIteration,
       capturedPixels: this.capturedPixels,
       scrollPosition: this.scrollPosition,
+    });
+
+    Logger.log('debug', `[CAPTURE] Next chunk dimensions: ${nextDimensions}.`, {
+      tags: 'capture,next chunk dimensions',
     });
 
     await this.appleScriptManager.captureScreenPortion(
@@ -250,6 +264,14 @@ class ScreenshotService extends EventEmitter implements ScreenCapturable {
     await this.emlManager.deleteEML();
     await this.saveMetaData();
 
+    Logger.log(
+      'debug',
+      `[CAPTURE] screen capture done for guid: ${this._test?.test_guid}.`,
+      {
+        tags: 'capture,done',
+      }
+    );
+
     this.resetState();
 
     this.emitEvent(CaptureEvents.complete);
@@ -263,6 +285,10 @@ class ScreenshotService extends EventEmitter implements ScreenCapturable {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { content, ...rest } = this._test;
 
+    Logger.log('debug', `[CAPTURE] saving test metadata: ${rest}.`, {
+      tags: 'capture,metadata',
+    });
+
     await fs.promises.writeFile(
       path.join(this.getPath(), 'meta.json'),
       JSON.stringify(rest)
@@ -274,6 +300,10 @@ class ScreenshotService extends EventEmitter implements ScreenCapturable {
       this.emitEvent(CaptureEvents.screenshotCorrupted);
       return;
     }
+
+    Logger.log('info', `[CAPTURE] Capturing screenshot by chunks.`, {
+      tags: 'capture,chunks',
+    });
 
     await this.scrollHeader();
 
@@ -287,6 +317,10 @@ class ScreenshotService extends EventEmitter implements ScreenCapturable {
       this.emitEvent(CaptureEvents.screenshotCorrupted);
       return;
     }
+
+    Logger.log('info', `[CAPTURE] Capturing screenshot in 1 shot.`, {
+      tags: 'capture,single',
+    });
 
     await this.appleScriptManager.captureScreenPortion(
       {
@@ -490,6 +524,10 @@ class ScreenshotService extends EventEmitter implements ScreenCapturable {
   }
 
   private deleteCapturedImages(): Promise<void> {
+    Logger.log('debug', `[CAPTURE] removing captured images.`, {
+      tags: 'capture,delete',
+    });
+
     return new Promise((resolve, reject) => {
       rimraf(this.getPath(), (error) => {
         if (error) {
