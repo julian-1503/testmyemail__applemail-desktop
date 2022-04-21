@@ -1,7 +1,7 @@
 {
   "name": "@applemail/image-processing",
   "description": "Image processing package for the applemail screen capture",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "dependencies": {
     "@applemail/lib": "*",
     "@applemail/config": "*"
