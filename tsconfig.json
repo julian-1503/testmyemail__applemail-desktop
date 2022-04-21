@@ -1,0 +1,17 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./screen-capture"
+    },
+    {
+      "path": "./image-processing"
+    },
+    {
+      "path": "./lib"
+    },
+    {
+      "path": "./config"
+    }
+  ]
+}

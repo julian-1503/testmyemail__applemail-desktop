@@ -1,0 +1,23 @@
+{
+  "name": "@applemail/image-processing",
+  "version": "1.0.0",
+  "description": "Image processing package for the applemail screen capture",
+  "dependencies": {
+    "@applemail/lib": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.emailonacid.com:screenshots/macos-desktop-client-applemail.git"
+  },
+  "scripts": {
+    "test": "jest --detectOpenHandles",
+    "test:coverage": "jest --detectOpenHandles --collectCoverage"
+  },
+  "keywords": [
+    "image",
+    "screenshot",
+    "thumbnail"
+  ],
+  "author": "Julian Castano",
+  "license": "ISC"
+}
