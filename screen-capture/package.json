@@ -1,0 +1,27 @@
+{
+  "name": "@applemail/screen-capture",
+  "description": "Screen Capture package for the apple mail app",
+  "version": "1.0.8",
+  "dependencies": {
+    "@applemail/lib": "*",
+    "@applemail/config": "*"
+  },
+  "exports": {
+    "./src/*": "./dist/src/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.emailonacid.com:screenshots/macos-desktop-client-applemail.git"
+  },
+  "scripts": {
+    "test": "jest --detectOpenHandles",
+    "test:coverage": "jest --detectOpenHandles --collectCoverage"
+  },
+  "keywords": [
+    "screenshot",
+    "mail",
+    "automation"
+  ],
+  "author": "Julian Castano",
+  "license": "ISC"
+}

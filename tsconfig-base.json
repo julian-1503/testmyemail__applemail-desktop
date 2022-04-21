@@ -1,0 +1,24 @@
+{
+  "extends": "@tsconfig/node16/tsconfig.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Node 16",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "lib": ["es2021"],
+    "target": "es2021",
+    "module": "CommonJS",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "allowSyntheticDefaultImports": true,
+    "composite": true,
+    "incremental": true,
+    "moduleResolution": "node"
+  }
+}

@@ -1,0 +1,12 @@
+env:
+  node: true
+extends:
+  - plugin:@typescript-eslint/recommended
+  - prettier
+  - plugin:prettier/recommended
+parser: '@typescript-eslint/parser'
+parserOptions:
+  ecmaVersion: 2021
+  project: ./tsconfig-base.json
+plugins:
+  - '@typescript-eslint'

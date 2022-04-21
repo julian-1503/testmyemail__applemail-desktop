@@ -1,3 +1,7 @@
 .DS_Store
 node_modules
 .env
+screen-capture/dist
+image-processing/dist
+config/dist
+lib/dist
