@@ -1,0 +1,26 @@
+{
+  "name": "@applemail/lib",
+  "description": "common modules",
+  "dependencies": {
+    "@applemail/config": "*"
+  },
+  "exports": {
+    "./src/*": "./dist/src/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.emailonacid.com:screenshots/macos-desktop-client-applemail.git"
+  },
+  "scripts": {
+    "test": "jest --detectOpenHandles",
+    "test:coverage": "jest --detectOpenHandles --collectCoverage"
+  },
+  "keywords": [
+    "screenshot",
+    "mail",
+    "automation"
+  ],
+  "author": "Julian Castano",
+  "license": "ISC",
+  "main": "./dist/src/*"
+}
