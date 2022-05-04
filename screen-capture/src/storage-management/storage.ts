@@ -1,6 +1,8 @@
 import { injectable } from 'inversify';
 import { createClient, commandOptions } from 'redis';
 import { EmailTest, StorageFetching } from './types';
+import Chance from 'chance';
+import Logger from '@applemail/lib/src/logger';
 
 @injectable()
 class StorageService implements StorageFetching {
@@ -31,11 +33,22 @@ class StorageService implements StorageFetching {
       throw new Error('Not Connected To Source');
     }
 
+    const number = new Chance().integer({ min: 0, max: 2 });
+
+    if (number === 2) {
+      throw new Error('simulating error');
+    }
+
     const next = await this.redisClient.blPop(
       commandOptions({ isolated: true }),
       from,
       3
     );
+
+    Logger.log('debug', '[STORAGE] Result from redis', {
+      tags: 'storage,next',
+      next,
+    });
 
     const parsedTest = JSON.parse(next?.element ?? '');
 
